@@ -185,3 +185,51 @@ func TestMessageTracker_Message(t *testing.T) {
 		assert.Nil(t, msg)
 	})
 }
+func TestMessageTracker_Add_FullTracker(t *testing.T) {
+ length := 5
+ mt := network.NewMessageTracker(length)
+
+ for i := 0; i < length; i++ {
+  err := mt.Add(generateMessage(i))
+  assert.NoError(t, err)
+ }
+
+ err := mt.Add(generateMessage(length))
+ assert.NoError(t, err)
+
+ msgs := mt.Messages()
+ assert.Equal(t, []*network.Message{
+  generateMessage(1),
+  generateMessage(2),
+  generateMessage(3),
+  generateMessage(4),
+  generateMessage(5),
+ }, msgs)
+}
+
+func TestMessageTracker_Delete_NonExistentMessage(t *testing.T) {
+ length := 5
+ mt := network.NewMessageTracker(length)
+
+ for i := 0; i < length; i++ {
+  err := mt.Add(generateMessage(i))
+  assert.NoError(t, err)
+ }
+
+ err := mt.Delete("non-existent-id")
+ assert.ErrorIs(t, err, network.ErrMessageNotFound)
+}
+
+func TestMessageTracker_Message_NonExistentMessage(t *testing.T) {
+ length := 5
+ mt := network.NewMessageTracker(length)
+
+ for i := 0; i < length; i++ {
+  err := mt.Add(generateMessage(i))
+  assert.NoError(t, err)
+ }
+
+ msg, err := mt.Message("non-existent-id")
+ assert.ErrorIs(t, err, network.ErrMessageNotFound)
+ assert.Nil(t, msg)
+}
